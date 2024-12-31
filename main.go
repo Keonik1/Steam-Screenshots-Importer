@@ -15,28 +15,55 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
+	"github.com/ncruces/zenity"
 	"github.com/nfnt/resize"
 )
 
 func main() {
 	myApp := app.New()
-	myWindow := myApp.NewWindow("Steam Screenshot Importer")
+	myWindow := myApp.NewWindow("Steam Screenshots Importer")
 
-	// UI Components
 	steamGameIDEntry := widget.NewEntry()
 	steamGameIDEntry.SetPlaceHolder("Enter Steam Game ID (e.g., 11111111)")
 	steamGameIDEntry.Validator = func(text string) error {
-		if len(text) > 30 || !isNumeric(text) {
-			return fmt.Errorf("must be numeric and less than 30 characters")
+		if len(text) == 0 {
+			return fmt.Errorf("steam game ID cannot be empty")
+		}
+		if !isNumeric(text) {
+			return fmt.Errorf("steam game ID must be numeric")
 		}
 		return nil
 	}
 
 	steamUserdataPathEntry := widget.NewEntry()
 	steamUserdataPathEntry.SetPlaceHolder("Enter Steam userdata folder path (e.g., D:\\Steam\\userdata\\1111111)")
+	steamUserdataPathEntry.Validator = func(text string) error {
+		if !isValidPath(text) {
+			return fmt.Errorf("invalid steam userdata path")
+		}
+		return nil
+	}
 
 	originScreenshotsPathEntry := widget.NewEntry()
 	originScreenshotsPathEntry.SetPlaceHolder("Enter Origin screenshots folder path (e.g., D:\\screenshots\\some_game)")
+	originScreenshotsPathEntry.Validator = func(text string) error {
+		if !isValidPath(text) {
+			return fmt.Errorf("invalid origin screenshots path")
+		}
+		return nil
+	}
+
+	openFolderDialog := func(entry *widget.Entry) func() {
+		return func() {
+			dir, err := zenity.SelectFile(zenity.Title("Select Folder"), zenity.Directory())
+			if err == nil && dir != "" {
+				entry.SetText(dir)
+			}
+		}
+	}
+
+	steamUserdataBrowseButton := widget.NewButton("Browse", openFolderDialog(steamUserdataPathEntry))
+	originScreenshotsBrowseButton := widget.NewButton("Browse", openFolderDialog(originScreenshotsPathEntry))
 
 	importButton := widget.NewButton("Import Screenshots", func() {
 		steamGameID := steamGameIDEntry.Text
@@ -56,7 +83,6 @@ func main() {
 			return
 		}
 
-		// Process screenshots
 		err := processScreenshots(originScreenshotsPath, steamScreenshotsFolderPath)
 		if err != nil {
 			dialog.ShowError(err, myWindow)
@@ -66,14 +92,37 @@ func main() {
 		dialog.ShowInformation("Success", "Screenshots imported to Steam folder. Please restart Steam to apply changes!", myWindow)
 	})
 
-	// Layout
+	updateImportButtonState := func() {
+		if isValidSteamGameID(steamGameIDEntry.Text) && isValidPath(steamUserdataPathEntry.Text) && isValidPath(originScreenshotsPathEntry.Text) {
+			importButton.Enable()
+		} else {
+			importButton.Disable()
+		}
+	}
+
+	steamGameIDEntry.OnChanged = func(s string) {
+		updateImportButtonState()
+	}
+
+	steamUserdataPathEntry.OnChanged = func(s string) {
+		updateImportButtonState()
+	}
+
+	originScreenshotsPathEntry.OnChanged = func(s string) {
+		updateImportButtonState()
+	}
+
+	importButton.Disable()
+
 	form := container.NewVBox(
 		widget.NewLabel("Steam Game ID:"),
 		steamGameIDEntry,
 		widget.NewLabel("Steam Userdata Folder Path:"),
 		steamUserdataPathEntry,
+		steamUserdataBrowseButton,
 		widget.NewLabel("Origin Screenshots Folder Path:"),
 		originScreenshotsPathEntry,
+		originScreenshotsBrowseButton,
 		importButton,
 	)
 
@@ -82,10 +131,22 @@ func main() {
 	myWindow.ShowAndRun()
 }
 
-// Utility Functions
 func isNumeric(s string) bool {
 	_, err := strconv.Atoi(s)
 	return err == nil
+}
+
+func isValidPath(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+
+	return info.IsDir()
+}
+
+func isValidSteamGameID(steamGameID string) bool {
+	return len(steamGameID) > 0 && isNumeric(steamGameID)
 }
 
 func processScreenshots(originPath, steamPath string) error {
@@ -103,14 +164,12 @@ func processScreenshots(originPath, steamPath string) error {
 		}
 	}
 
-	// Sort files by modification time
 	sort.Slice(screenshots, func(i, j int) bool {
 		iInfo, _ := screenshots[i].Info()
 		jInfo, _ := screenshots[j].Info()
 		return iInfo.ModTime().Before(jInfo.ModTime())
 	})
 
-	// Process files
 	nameMap := make(map[string]int)
 	for _, file := range screenshots {
 		filePath := filepath.Join(originPath, file.Name())
@@ -122,7 +181,6 @@ func processScreenshots(originPath, steamPath string) error {
 
 		destPath := filepath.Join(steamPath, finalName)
 
-		// Handle file formats
 		if strings.HasSuffix(strings.ToLower(file.Name()), ".png") {
 			if err := convertPngToJpg(filePath, destPath); err != nil {
 				return err
@@ -155,7 +213,7 @@ func convertPngToJpg(src, dest string) error {
 	defer outFile.Close()
 
 	resizedImg := resize.Resize(0, 0, img, resize.Lanczos3)
-	return jpeg.Encode(outFile, resizedImg, &jpeg.Options{Quality: 80})
+	return jpeg.Encode(outFile, resizedImg, &jpeg.Options{Quality: 100})
 }
 
 func copyFile(src, dest string) error {
@@ -176,5 +234,5 @@ func copyFile(src, dest string) error {
 	}
 	defer outFile.Close()
 
-	return jpeg.Encode(outFile, img, &jpeg.Options{Quality: 80})
+	return jpeg.Encode(outFile, img, &jpeg.Options{Quality: 100})
 }
