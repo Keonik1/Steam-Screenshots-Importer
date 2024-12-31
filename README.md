@@ -2,6 +2,8 @@
 
 This little program allows you to transfer your screenshots from games that were taken **outside** of the Steam platform into a format that Steam will understand, to further share them in the community and beyond.
 
+![UI](docs/image.png)
+
 For example, you made a screenshot with Nvidia, AMD or **other application**, because you played through XBOX game pass, and now you want to share these screenshots in Steam, you just need to run this program, specify the **game ID** (you can find it at https://steamdb.info/), the path to the **Steam user folder** and the path to the **folder where your screenshots are** and everything, the program will do everything automatically! You just need to **restart Steam**, because it may not display the added screenshots.
 
 (screenshots in origin folder must be `.jpg`, `.jpeg` or `.png`)
