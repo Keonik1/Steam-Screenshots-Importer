@@ -9,7 +9,7 @@ For example, you made a screenshot with Nvidia, AMD or **other application**, be
 (screenshots in origin folder must be `.jpg`, `.jpeg` or `.png`)
 
 # Installation
-1. Download `.exe` file from latest release: [releases](https://github.com/Keonik1/Steam-Screenshots-Importer/releases)
+1. Download `.exe` file from latest release: [click here](https://github.com/Keonik1/Steam-Screenshots-Importer/releases/latest/download/steam-screenshots-importer.exe)
 2. Run `.exe` file.
 
 # Build from source
