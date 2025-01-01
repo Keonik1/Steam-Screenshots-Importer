@@ -14,6 +14,7 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/ncruces/zenity"
 	"github.com/nfnt/resize"
@@ -63,7 +64,21 @@ func main() {
 	}
 
 	steamUserdataBrowseButton := widget.NewButton("Browse", openFolderDialog(steamUserdataPathEntry))
+	steamUserdataBrowseButton.Resize(fyne.NewSize(80, 30))
 	originScreenshotsBrowseButton := widget.NewButton("Browse", openFolderDialog(originScreenshotsPathEntry))
+	originScreenshotsBrowseButton.Resize(fyne.NewSize(80, 30))
+
+	steamUserdataRow := container.New(
+		layout.NewBorderLayout(nil, nil, nil, steamUserdataBrowseButton),
+		steamUserdataBrowseButton,
+		steamUserdataPathEntry,
+	)
+
+	originScreenshotsRow := container.New(
+		layout.NewBorderLayout(nil, nil, nil, originScreenshotsBrowseButton),
+		originScreenshotsBrowseButton,
+		originScreenshotsPathEntry,
+	)
 
 	importButton := widget.NewButton("Import Screenshots", func() {
 		steamGameID := steamGameIDEntry.Text
@@ -118,11 +133,10 @@ func main() {
 		widget.NewLabel("Steam Game ID:"),
 		steamGameIDEntry,
 		widget.NewLabel("Steam Userdata Folder Path:"),
-		steamUserdataPathEntry,
-		steamUserdataBrowseButton,
+		steamUserdataRow,
 		widget.NewLabel("Origin Screenshots Folder Path:"),
-		originScreenshotsPathEntry,
-		originScreenshotsBrowseButton,
+		originScreenshotsRow,
+		widget.NewLabel(""),
 		importButton,
 	)
 

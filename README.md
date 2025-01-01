@@ -23,6 +23,3 @@ fyne package -os windows -icon .\Icon.png
 
 # Limitations
 - Currently available for windows only, compatibility with linux and macos has not been tested, but you can check it yourself and send Pull Request with improvements!
-
-# Roadmap
-- Make the UI more user-friendly

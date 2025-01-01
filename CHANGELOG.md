@@ -1,5 +1,9 @@
 # Changelog
 
+# v0.0.3
+- Move the "Browse" buttons to the right side
+- Add distance in front of the "import" button
+
 # v0.0.2
 - Changed application name
 - Removed check for maximum game ID length, but it is now limited to int number (19 characters).
